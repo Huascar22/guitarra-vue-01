@@ -1,5 +1,17 @@
-<script setup>
+<script setup >
+    import { computed } from 'vue';
+    const props = defineProps({
+        carrito: {
+            type: Array,
+            require: true
+        }
+    })
 
+    const emit = defineEmits(['descrementar-guitarra', 'incrementar-guitarra', 'eliminar-guitarra', 'vaciar-carrito'])
+
+    const totalPagar = computed(() => {
+        return props.carrito.reduce((total, guitarra) => total + (guitarra.precio * guitarra.cantidad), 0)
+    })
 </script>
 
 <template>
@@ -18,8 +30,9 @@
                         <img class="img-fluid" src="/img/carrito.png" alt="imagen carrito" />
 
                         <div id="carrito" class="bg-white p-3">
-                            <p class="text-center">El carrito esta vacio</p>
-                            <table class="w-100 table">
+                            <p v-if="carrito.length === 0" class="text-center">El carrito esta vacio</p>
+                            <div v-else>
+                                <table  class="w-100 table">
                                 <thead>
                                     <tr>
                                         <th>Imagen</th>
@@ -30,26 +43,30 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <tr v-for="guitarra in carrito">
                                         <td>
-                                            <img class="img-fluid" src="/img/guitarra_02.jpg" alt="imagen guitarra">
+                                            <img class="img-fluid" 
+                                                :src="'/img/' + guitarra.imagen + '.jpg'" 
+                                                :alt="'imagen' + guitarra.nombre">
                                         </td>
-                                        <td>SRV</td>
+                                        <td>{{ guitarra.nombre }}</td>
                                         <td class="fw-bold">
-                                                $299
+                                                ${{guitarra.precio}}
                                         </td>
                                         <td class="flex align-items-start gap-4">
                                             <button
                                                 type="button"
                                                 class="btn btn-dark"
-                                            >
+                                                @click="$emit('descrementar-guitarra', guitarra)"
+                                                >
                                                 -
                                             </button>
-                                                1
+                                                {{guitarra.cantidad}}
                                             <button
                                                 type="button"
                                                 class="btn btn-dark"
-                                            >
+                                                @click="$emit('incrementar-guitarra', guitarra)"
+                                                >
                                                 +
                                             </button>
                                         </td>
@@ -57,16 +74,21 @@
                                             <button
                                                 class="btn btn-danger"
                                                 type="button"
-                                            >
+                                                @click="$emit('eliminar-guitarra', guitarra)"
+                                                >
                                                 X
                                             </button>
                                         </td>
                                     </tr>
                                 </tbody>
-                            </table>
+                                </table>
 
-                            <p class="text-end">Total pagar: <span class="fw-bold">$899</span></p>
-                            <button class="btn btn-dark w-100 mt-3 p-2">Vaciar Carrito</button>
+                                <p class="text-end">Total pagar: <span class="fw-bold">${{ totalPagar }}</span></p>
+                                <button class="btn btn-dark w-100 mt-3 p-2"
+                                    @click="$emit('vaciar-carrito')"
+                                >Vaciar Carrito</button>
+                            </div>
+                           
                         </div>
                     </div>
                 </nav>
@@ -88,7 +110,3 @@
         <img class="header-guitarra" src="/img/header_guitarra.png" alt="imagen header">
     </header>
 </template>
-
-<style lang="scss" scoped>
-
-</style>
